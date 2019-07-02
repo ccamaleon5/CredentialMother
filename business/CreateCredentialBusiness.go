@@ -112,7 +112,7 @@ func CreateCredential(subjects []*models.CredentialSubject, nodeURL string, issu
 			fmt.Println("Transaction wasn't sent")
 		}
 
-		err = sendCredentialByEmail("adriancc5.5@gmail.com", string(rawCredential))
+		err = sendCredentialByEmail(getReceiverMail(subject.Content), string(rawCredential))
 		if err != nil {
 			fmt.Printf("Failed to send email: %s", err)
 		}
@@ -147,6 +147,13 @@ func getProof(typeProof string, verificationMethod string) *models.Proof {
 func generateID() string {
 	id := uid.New()
 	return id.String()
+}
+
+func getReceiverMail(contentSubject interface{}) string {
+	content := contentSubject.(map[string]interface{})
+	email := content["email"]
+
+	return fmt.Sprintf("%v", email)
 }
 
 func sendCredentialByEmail(destination, credential string) error { // Create a new session and specify an AWS Region.
