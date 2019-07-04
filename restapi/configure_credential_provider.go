@@ -16,7 +16,7 @@ import (
 	"github.com/ccamaleon5/CredentialMother/restapi/operations/did"
 
 	"github.com/ccamaleon5/CredentialMother/business"
-	//"github.com/rs/cors"
+	"github.com/rs/cors"
 )
 
 //go:generate swagger generate server --target ../../CredentialProvider --name CredentialProvider --spec ../swagger/swaggerui/swagger.json
@@ -103,16 +103,15 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	return uiMiddleware(handler)
 
-	/*corsHandler := cors.New(cors.Options{
-		Debug: false,
-		AllowedHeaders:[]string{"*"},
-		AllowedOrigins:[]string{"*"},
-		AllowedMethods:[]string{},
-		MaxAge:1000,
+	corsHandler := cors.New(cors.Options{
+		Debug:          false,
+		AllowedHeaders: []string{"*"},
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{},
+		MaxAge:         1000,
 	})
-	return corsHandler.Handler(handler)*/
+	return corsHandler.Handler(uiMiddleware(handler))
 }
 
 func uiMiddleware(handler http.Handler) http.Handler {
