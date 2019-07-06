@@ -90,11 +90,11 @@ func (ec *Client) ConfigTransaction(pk string) (*bind.TransactOpts, error) {
 }
 
 //SignCredential into blockchain
-func (ec *Client) SignCredential(contractAddress common.Address, options *bind.TransactOpts, credentialHash [32]byte, duration *big.Int) error {
+func (ec *Client) SignCredential(contractAddress common.Address, options *bind.TransactOpts, credentialHash [32]byte, duration *big.Int) (error, string) {
 	contract, err := store.NewStore(contractAddress, ec.client)
 	if err != nil {
 		log.Printf("Can't instance contract: %s", err)
-		return err
+		return err, "0x0"
 	}
 
 	log.Println("Contract instanced")
@@ -110,11 +110,11 @@ func (ec *Client) SignCredential(contractAddress common.Address, options *bind.T
 	tx, err := contract.Verify(options, credentialHash, duration)
 	if err != nil {
 		log.Println("Error calling contract:", err)
-		return err
+		return err, "0x0"
 	}
 
 	log.Printf("Tx sent: %s", tx.Hash().Hex())
-	return nil
+	return nil, tx.Hash().Hex()
 }
 
 //RevokeCredential into blockchain
@@ -153,7 +153,7 @@ func (ec *Client) VerifyCredential(contractAddress common.Address, credential []
 		return false, err
 	}
 
-	log.Printf("Contract %s instanced",contractAddress)
+	log.Printf("Contract %s instanced", contractAddress)
 
 	hash := sha256.Sum256(credential)
 
@@ -185,7 +185,7 @@ func (ec *Client) VerifyCredential(contractAddress common.Address, credential []
 }
 
 //SetCredential to repository blockchain with id
-func (ec *Client) SetCredential(contractAddress common.Address, options *bind.TransactOpts, credentialID [32]byte, credentialHash [32]byte) (error) {
+func (ec *Client) SetCredential(contractAddress common.Address, options *bind.TransactOpts, credentialID [32]byte, credentialHash [32]byte) error {
 	contract, err := store.NewRepository(contractAddress, ec.client)
 	if err != nil {
 		log.Printf("Can't instance contract repository: %s", err)
@@ -239,18 +239,18 @@ func (ec *Client) GetCredential(contractAddress common.Address, id [32]byte) ([3
 }
 
 //DeployRepositoryContract into Ethereum blockchain
-func (ec *Client) DeployRepositoryContract(pk string) (string,error) {
+func (ec *Client) DeployRepositoryContract(pk string) (string, error) {
 	options, err := ec.ConfigTransaction(pk)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	contractAddress, tx, _, err := store.DeployRepository(options, ec.client)
 	if err != nil {
 		log.Fatal(err)
-		return "",err
+		return "", err
 	}
 
 	log.Println("repository contract address:", contractAddress.Hex())
 	log.Println("tx:", tx.Hash().Hex())
-	return contractAddress.Hex(),nil
+	return contractAddress.Hex(), nil
 }

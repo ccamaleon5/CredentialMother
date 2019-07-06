@@ -37,10 +37,6 @@ const (
 	// This address must be verified with Amazon SES.
 	Sender = "cursos@itama.pe"
 
-	// Replace recipient@example.com with a "To" address. If your account
-	// is still in the sandbox, this address must be verified.
-	Recipient = "adriancc5.5@gmail.com"
-
 	// Specify a configuration set. If you do not want to use a configuration
 	// set, comment out the following constant and the
 	// ConfigurationSetName: aws.String(ConfigurationSet) argument below
@@ -51,11 +47,6 @@ const (
 
 	// The subject line for the email.
 	Subject = "Bienvenido al Curso Blockchain"
-
-	// The HTML body for the email.
-	HtmlBody = "<h1>Itama Cursos</h1><p>Tu credencial fue registrada en la Blockchain " +
-		"<a href='https://ropsten.etherscan.io/tx/0x1860823efe27a0be0bb48375db3c0c94ab9e8435d836113eb3481b7586a3180f'>Ethereum Block Explorer</a> using the " +
-		"<a href='https://aws.amazon.com/sdk-for-go/'>Go</a>.</p>"
 
 	//The email body for recipients with non-HTML email clients.
 	TextBody = "Este email contiene tu Credential de acceso al curso de Blockchain, se te solicitará el JSON adjunto, por favor no lo borres o pierdas."
@@ -107,12 +98,12 @@ func CreateCredential(subjects []*models.CredentialSubject, nodeURL string, issu
 
 		credentialHash := sha256.Sum256(rawCredential)
 
-		err = client.SignCredential(address, options, credentialHash, big.NewInt(date.Unix()))
+		err, tx := client.SignCredential(address, options, credentialHash, big.NewInt(date.Unix()))
 		if err != nil {
 			fmt.Println("Transaction wasn't sent")
 		}
 
-		err = sendCredentialByEmail(getReceiverMail(subject.Content), string(rawCredential))
+		err = sendCredentialByEmail(getReceiverMail(subject.Content), string(rawCredential), tx)
 		if err != nil {
 			fmt.Printf("Failed to send email: %s", err)
 		}
@@ -156,7 +147,7 @@ func getReceiverMail(contentSubject interface{}) string {
 	return fmt.Sprintf("%v", email)
 }
 
-func sendCredentialByEmail(destination, credential string) error { // Create a new session and specify an AWS Region.
+func sendCredentialByEmail(destination, credential, tx string) error { // Create a new session and specify an AWS Region.
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(AwsRegion)},
 	)
@@ -165,6 +156,11 @@ func sendCredentialByEmail(destination, credential string) error { // Create a n
 	svc := ses.New(sess)
 
 	// Assemble the email.
+	// The HTML body for the email.
+	HtmlBody := "<h1>Itama Cursos</h1><p>Tu credencial fue registrada en la Blockchain " +
+		"<a href='https://ropsten.etherscan.io/tx/" + tx + "'>Ethereum Block Explorer</a> using the " +
+		"<a href='https://aws.amazon.com/sdk-for-go/'>Go</a>.</p>"
+
 	input, err := buildEmailInput(Sender, destination, Subject, HtmlBody,
 		[]byte(credential))
 	if err != nil {
