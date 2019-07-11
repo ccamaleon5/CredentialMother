@@ -10,13 +10,14 @@ package business
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"math/big"
-	"mime/multipart"
-	"net/textproto"
-	"strings"
+	"net/http"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -26,10 +27,7 @@ import (
 	bl "github.com/ccamaleon5/CredentialMother/blockchain"
 	"github.com/ccamaleon5/CredentialMother/models"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ses"
+	qrcode "github.com/skip2/go-qrcode"
 )
 
 const (
@@ -103,7 +101,12 @@ func CreateCredential(subjects []*models.CredentialSubject, nodeURL string, issu
 			fmt.Println("Transaction wasn't sent")
 		}
 
-		err = sendCredentialByEmail(getReceiverMail(subject.Content), string(rawCredential), tx)
+		qrFile, err := generateQR("http://cursos.itama.com/", credentialHash, getNameSubject(subject.Content))
+		if err != nil {
+			fmt.Printf("Failed generate QR: %s", err)
+		}
+
+		err = sendCredentialByEmail(getReceiverMail(subject.Content), string(rawCredential), tx, getNameSubject(subject.Content), getLastNameSubject(subject.Content), qrFile)
 		if err != nil {
 			fmt.Printf("Failed to send email: %s", err)
 		}
@@ -135,18 +138,50 @@ func getProof(typeProof string, verificationMethod string) *models.Proof {
 	return proof
 }
 
-func generateID() string {
-	id := uid.New()
-	return id.String()
+func sendCredentialByEmail(destination, credential, tx, firstName, lastName string, qrFile []byte) error {
+	jsonData := models.MailRequest{FolderId: 13233, Name: firstName + ".png", FileData: base64.StdEncoding.EncodeToString(qrFile)}
+	jsonValue, _ := json.Marshal(jsonData)
+
+	request, err := http.NewRequest("POST", "https://us7.api.mailchimp.com/3.0/file-manager/files", bytes.NewBuffer(jsonValue))
+	request.Header.Add("Authorization", "/apikey 6e29f9fe593c0caaef0caf99ef8ef499-us7")
+
+	// Send req using http Client
+	client := &http.Client{}
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Println("Error on response.\n[ERRO] -", err)
+		return err
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	log.Println(string([]byte(body)))
+
+	//Send Email to Alumn
+
+	var result map[string]interface{}
+	json.Unmarshal(body, &result)
+
+	fullURL := getFullURL(result)
+
+	mergeFields := models.MergeFields{FNAME: firstName, LNAME: lastName, MMERGE5: fullURL, MMERGE6: fullURL}
+	emailData := models.SendMailRequest{EmailAddress: destination, Status: "subscribed", MergeFields: mergeFields}
+	emailValue, _ := json.Marshal(emailData)
+	request, err = http.NewRequest("POST", "https://us7.api.mailchimp.com/3.0/lists/4a956ef616/members", bytes.NewBuffer(emailValue))
+	request.Header.Add("Authorization", "/apikey 6e29f9fe593c0caaef0caf99ef8ef499-us7")
+
+	resp, err = client.Do(request)
+	if err != nil {
+		log.Println("Error on response.\n[ERRO] -", err)
+		return err
+	}
+
+	body, _ = ioutil.ReadAll(resp.Body)
+	log.Println(string([]byte(body)))
+
+	return nil
 }
 
-func getReceiverMail(contentSubject interface{}) string {
-	content := contentSubject.(map[string]interface{})
-	email := content["email"]
-
-	return fmt.Sprintf("%v", email)
-}
-
+/*
 func sendCredentialByEmail(destination, credential, tx string) error { // Create a new session and specify an AWS Region.
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(AwsRegion)},
@@ -266,4 +301,43 @@ func buildEmailInput(source, destination, subject, message string,
 	}
 
 	return input, nil
+}*/
+
+func generateQR(url string, hashCredential [32]byte, filename string) ([]byte, error) {
+	hash := string(hashCredential[:])
+	qrFile, err := qrcode.Encode(url+hash, qrcode.Medium, 256)
+	return qrFile, err
+}
+
+func generateID() string {
+	id := uid.New()
+	return id.String()
+}
+
+func getNameSubject(contentSubject interface{}) string {
+	content := contentSubject.(map[string]interface{})
+	name := content["name"]
+
+	return fmt.Sprintf("%v", name)
+}
+
+func getLastNameSubject(contentSubject interface{}) string {
+	content := contentSubject.(map[string]interface{})
+	lastname := content["lastname"]
+
+	return fmt.Sprintf("%v", lastname)
+}
+
+func getReceiverMail(contentSubject interface{}) string {
+	content := contentSubject.(map[string]interface{})
+	email := content["email"]
+
+	return fmt.Sprintf("%v", email)
+}
+
+func getFullURL(contentSubject interface{}) string {
+	content := contentSubject.(map[string]interface{})
+	fullURL := content["full_size_url"]
+
+	return fmt.Sprintf("%v", fullURL)
 }

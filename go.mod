@@ -22,6 +22,7 @@ require (
 	github.com/jmhodges/clock v0.0.0-20160418191101-880ee4c33548 // indirect
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/kisielk/sqlstruct v0.0.0-20150923205031-648daed35d49 // indirect
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pkg/errors v0.8.1
@@ -29,6 +30,7 @@ require (
 	github.com/rs/cors v1.6.0
 	github.com/segmentio/ksuid v1.0.2
 	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24
+	github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
 	github.com/spf13/cast v1.3.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
