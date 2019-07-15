@@ -97,7 +97,7 @@ func (ec *Client) SignCredential(contractAddress common.Address, options *bind.T
 		return err, "0x0"
 	}
 
-	log.Println("Contract instanced")
+	log.Printf("Contract %s instanced", contractAddress.Hex())
 
 	var hashito = make([]byte, 32, 64)
 
@@ -166,6 +166,43 @@ func (ec *Client) VerifyCredential(contractAddress common.Address, credential []
 	log.Println("credential hash:", hex.EncodeToString(hashito))
 
 	result, err := contract.Verifications(&bind.CallOpts{}, hash, address)
+	if err != nil {
+		log.Println("Error calling contract:", err)
+		return false, err
+	}
+
+	log.Println("result:", result)
+
+	cmp := result.Exp.Cmp(big.NewInt(0))
+
+	if cmp > 0 {
+		log.Println("Credential is valid")
+		return true, nil
+	}
+
+	log.Println("Credential is invalid")
+	return false, nil
+}
+
+//VerifyHashCredential saved into blockchain
+func (ec *Client) VerifyHashCredential(contractAddress common.Address, hashCredential [32]byte, address common.Address) (bool, error) {
+	contract, err := store.NewStore(contractAddress, ec.client)
+	if err != nil {
+		log.Printf("Can't instance contract: %s", err)
+		return false, err
+	}
+
+	log.Printf("Contract %s instanced", contractAddress.Hex())
+
+	var hashito = make([]byte, 32, 64)
+
+	for i, j := range hashCredential {
+		hashito[i] = j
+	}
+
+	log.Println("credential hash:", hex.EncodeToString(hashito))
+
+	result, err := contract.Verifications(&bind.CallOpts{}, hashCredential, address)
 	if err != nil {
 		log.Println("Error calling contract:", err)
 		return false, err

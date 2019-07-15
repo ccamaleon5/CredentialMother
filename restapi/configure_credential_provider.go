@@ -69,6 +69,13 @@ func configureAPI(api *operations.CredentialProviderAPI, config *ServerConfig) h
 		}
 		return credential.NewVerifyCredentialOK().WithPayload(response)
 	})
+	api.CredentialVerifyHashCredentialHandler = credential.VerifyHashCredentialHandlerFunc(func(params credential.VerifyHashCredentialParams) middleware.Responder {
+		response, err := business.VerifyHashCredential(params.CredentialHash, config.Node, config.Address, config.Proof.Verification)
+		if err != nil {
+			return credential.NewVerifyHashCredentialBadRequest()
+		}
+		return credential.NewVerifyHashCredentialOK().WithPayload(response)
+	})
 	api.CredentialRevokeCredentialHandler = credential.RevokeCredentialHandlerFunc(func(params credential.RevokeCredentialParams) middleware.Responder {
 		err := business.RevokeCredential(params.CredentialID, config.Node, config.PrivateKey, config.Proof.Verification, config.Repository.Address)
 		if err != nil {

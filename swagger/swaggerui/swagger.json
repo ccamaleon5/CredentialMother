@@ -275,6 +275,50 @@
         }
       }
     },
+    "/credential/{credentialHash}/verify": {
+      "get": {
+        "tags": [
+          "credential"
+        ],
+        "summary": "Verify a Hash credential",
+        "description": "This service verify into blockchain if the hash credential is current and this was not revoked",
+        "operationId": "verifyHashCredential",
+        "consumes": [
+          "application/json",
+          "application/xml"
+        ],
+        "produces": [
+          "application/xml",
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "credentialHash",
+            "description": "the hash credential that need be validated. Example: A2354B54566756EF12132DC233E2BB33122",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/VerifyResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid credential supplied"
+          },
+          "404": {
+            "description": "DID not found"
+          },
+          "500": {
+            "description": "Error Internal Server"
+          }
+        }
+      }
+    },
     "/did/{did}": {
       "get": {
         "tags": [

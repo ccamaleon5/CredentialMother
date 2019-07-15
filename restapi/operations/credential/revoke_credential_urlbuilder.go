@@ -46,7 +46,7 @@ func (o *RevokeCredentialURL) Build() (*url.URL, error) {
 	if credentialID != "" {
 		_path = strings.Replace(_path, "{credentialId}", credentialID, -1)
 	} else {
-		return nil, errors.New("CredentialID is required on RevokeCredentialURL")
+		return nil, errors.New("credentialId is required on RevokeCredentialURL")
 	}
 
 	_basePath := o._basePath

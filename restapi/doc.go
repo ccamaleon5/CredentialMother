@@ -22,7 +22,7 @@ http://swagger.io/terms/
     BasePath: /v1
     Version: 0.0.1
     License: Apache 2.0 http://www.apache.org/licenses/LICENSE-2.0.html
-    Contact: <aparejaa@everis.com>
+    Contact: <adriancc5.5@gmail.com>
 
     Consumes:
     - application/json

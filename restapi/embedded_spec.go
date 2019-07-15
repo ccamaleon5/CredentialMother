@@ -28,7 +28,7 @@ func init() {
     "title": "Credential Provider",
     "termsOfService": "http://swagger.io/terms/",
     "contact": {
-      "email": "aparejaa@everis.com"
+      "email": "adriancc5.5@gmail.com"
     },
     "license": {
       "name": "Apache 2.0",
@@ -125,6 +125,50 @@ func init() {
                 "$ref": "#/definitions/Credential"
               }
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/VerifyResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid credential supplied"
+          },
+          "404": {
+            "description": "DID not found"
+          },
+          "500": {
+            "description": "Error Internal Server"
+          }
+        }
+      }
+    },
+    "/credential/{credentialHash}/verify": {
+      "get": {
+        "description": "This service verify into blockchain if the hash credential is current and this was not revoked",
+        "consumes": [
+          "application/json",
+          "application/xml"
+        ],
+        "produces": [
+          "application/xml",
+          "application/json"
+        ],
+        "tags": [
+          "credential"
+        ],
+        "summary": "Verify a Hash credential",
+        "operationId": "verifyHashCredential",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the hash credential that need be validated. Example: A2354B54566756EF12132DC233E2BB33122",
+            "name": "credentialHash",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -473,7 +517,7 @@ func init() {
       "properties": {
         "error": {
           "description": "Error code and message ocurred",
-          "$ref": "#/definitions/Proof"
+          "$ref": "#/definitions/Error"
         },
         "valid": {
           "description": "Credentials are validated",
@@ -516,7 +560,7 @@ func init() {
     "title": "Credential Provider",
     "termsOfService": "http://swagger.io/terms/",
     "contact": {
-      "email": "aparejaa@everis.com"
+      "email": "adriancc5.5@gmail.com"
     },
     "license": {
       "name": "Apache 2.0",
@@ -613,6 +657,50 @@ func init() {
                 "$ref": "#/definitions/Credential"
               }
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/VerifyResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid credential supplied"
+          },
+          "404": {
+            "description": "DID not found"
+          },
+          "500": {
+            "description": "Error Internal Server"
+          }
+        }
+      }
+    },
+    "/credential/{credentialHash}/verify": {
+      "get": {
+        "description": "This service verify into blockchain if the hash credential is current and this was not revoked",
+        "consumes": [
+          "application/json",
+          "application/xml"
+        ],
+        "produces": [
+          "application/xml",
+          "application/json"
+        ],
+        "tags": [
+          "credential"
+        ],
+        "summary": "Verify a Hash credential",
+        "operationId": "verifyHashCredential",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the hash credential that need be validated. Example: A2354B54566756EF12132DC233E2BB33122",
+            "name": "credentialHash",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {

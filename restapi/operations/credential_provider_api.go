@@ -60,6 +60,9 @@ func NewCredentialProviderAPI(spec *loads.Document) *CredentialProviderAPI {
 		CredentialVerifyCredentialHandler: credential.VerifyCredentialHandlerFunc(func(params credential.VerifyCredentialParams) middleware.Responder {
 			return middleware.NotImplemented("operation CredentialVerifyCredential has not yet been implemented")
 		}),
+		CredentialVerifyHashCredentialHandler: credential.VerifyHashCredentialHandlerFunc(func(params credential.VerifyHashCredentialParams) middleware.Responder {
+			return middleware.NotImplemented("operation CredentialVerifyHashCredential has not yet been implemented")
+		}),
 	}
 }
 
@@ -82,13 +85,13 @@ type CredentialProviderAPI struct {
 	Middleware      func(middleware.Builder) http.Handler
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
-	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
 	// APIKeyAuthenticator generates a runtime.Authenticator from the supplied token auth function.
-	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
-	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
 	// JSONConsumer registers a consumer for a "application/json" mime type
@@ -113,6 +116,8 @@ type CredentialProviderAPI struct {
 	DidValidateDidHandler did.ValidateDidHandler
 	// CredentialVerifyCredentialHandler sets the operation handler for the verify credential operation
 	CredentialVerifyCredentialHandler credential.VerifyCredentialHandler
+	// CredentialVerifyHashCredentialHandler sets the operation handler for the verify hash credential operation
+	CredentialVerifyHashCredentialHandler credential.VerifyHashCredentialHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -206,6 +211,10 @@ func (o *CredentialProviderAPI) Validate() error {
 
 	if o.CredentialVerifyCredentialHandler == nil {
 		unregistered = append(unregistered, "credential.VerifyCredentialHandler")
+	}
+
+	if o.CredentialVerifyHashCredentialHandler == nil {
+		unregistered = append(unregistered, "credential.VerifyHashCredentialHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -341,6 +350,11 @@ func (o *CredentialProviderAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/credential/verify"] = credential.NewVerifyCredential(o.context, o.CredentialVerifyCredentialHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/credential/{credentialHash}/verify"] = credential.NewVerifyHashCredential(o.context, o.CredentialVerifyHashCredentialHandler)
 
 }
 

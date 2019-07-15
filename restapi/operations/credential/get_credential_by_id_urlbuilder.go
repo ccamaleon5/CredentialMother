@@ -46,7 +46,7 @@ func (o *GetCredentialByIDURL) Build() (*url.URL, error) {
 	if credentialID != "" {
 		_path = strings.Replace(_path, "{credentialId}", credentialID, -1)
 	} else {
-		return nil, errors.New("CredentialID is required on GetCredentialByIDURL")
+		return nil, errors.New("credentialId is required on GetCredentialByIDURL")
 	}
 
 	_basePath := o._basePath

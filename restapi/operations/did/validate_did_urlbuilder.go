@@ -46,7 +46,7 @@ func (o *ValidateDidURL) Build() (*url.URL, error) {
 	if did != "" {
 		_path = strings.Replace(_path, "{did}", did, -1)
 	} else {
-		return nil, errors.New("Did is required on ValidateDidURL")
+		return nil, errors.New("did is required on ValidateDidURL")
 	}
 
 	_basePath := o._basePath
