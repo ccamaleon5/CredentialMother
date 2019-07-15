@@ -30,6 +30,6 @@ type SendMailRequest struct {
 type MergeFields struct {
 	FNAME   string `json:"FNAME"`
 	LNAME   string `json:"LNAME"`
-	MMERGE5 string `json:"MMERGE5"`
-	MMERGE6 string `json:"MMERGE6"`
+	MMERGE5 string `json:"QRURL"`
+	MMERGE6 string `json:"HASH"`
 }

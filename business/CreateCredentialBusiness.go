@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -163,7 +164,7 @@ func sendCredentialByEmail(destination, credential, tx, firstName, lastName stri
 
 	fullURL := getFullURL(result)
 
-	mergeFields := models.MergeFields{FNAME: firstName, LNAME: lastName, MMERGE5: fullURL, MMERGE6: fullURL}
+	mergeFields := models.MergeFields{FNAME: firstName, LNAME: lastName, MMERGE5: fullURL, MMERGE6: tx}
 	emailData := models.SendMailRequest{EmailAddress: destination, Status: "subscribed", MergeFields: mergeFields}
 	emailValue, _ := json.Marshal(emailData)
 	request, err = http.NewRequest("POST", "https://us7.api.mailchimp.com/3.0/lists/4a956ef616/members", bytes.NewBuffer(emailValue))
@@ -304,8 +305,15 @@ func buildEmailInput(source, destination, subject, message string,
 }*/
 
 func generateQR(url string, hashCredential [32]byte, filename string) ([]byte, error) {
-	hash := string(hashCredential[:])
-	qrFile, err := qrcode.Encode(url+hash, qrcode.Medium, 256)
+	var hash = make([]byte, 32, 64)
+
+	for i, j := range hashCredential {
+		hash[i] = j
+	}
+
+	log.Println("qrrr hex:", hex.EncodeToString(hash))
+	log.Println("qrrr:", hash)
+	qrFile, err := qrcode.Encode(url+hex.EncodeToString(hash), qrcode.Medium, 256)
 	return qrFile, err
 }
 
